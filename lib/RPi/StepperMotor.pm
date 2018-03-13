@@ -152,6 +152,7 @@ sub _wait {
     my ($self) = @_;
     select(undef, undef, undef, $self->delay);
 }
+sub __vim_placeholder {}
 
 1;
 __END__
@@ -178,6 +179,14 @@ $sm->ccw(240); # 240 degrees the other way
 
 $sm->speed('full'); # skip every second step, turning the motor twice as fast
 $sm->delay(0.5);    # set the delay to a half-second in between steps
+
+=head1 DESCRIPTION
+
+Control a 28BYJ-48 stepper motor through a ULN2003 driver chip.
+
+This is the only setup I've tested. If I come across any more in the future, I
+will update this distribution and allow a user to selectively pick which setup
+they would like to use.
 
 =head1 METHODS
 
@@ -216,7 +225,7 @@ Parameters:
 Mandatory, Integer: The number of degrees to turn the motor in a clockwise
 direction.
 
- =head2 ccw($degrees)
+=head2 ccw($degrees)
 
 Turns the motor in a counter-clockwise direction by a specified number of
 degrees.
