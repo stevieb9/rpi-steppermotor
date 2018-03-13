@@ -5,7 +5,6 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
-use Data::Dumper;
 use RPi::Const qw(:all);
 use WiringPi::API qw(:perl);
 
@@ -51,63 +50,16 @@ sub new {
 }
 sub cw {
     my ($self, $degrees) = @_;
-
-    my $step_counter = 0;
-    my $pins = $self->_pins;
-
-    for (1..$self->_turns($degrees)){
-        for my $gpio_pin (NUM_PINS){
-            if (STEPPER_SEQUENCE->[$step_counter][$gpio_pin]){
-                write_pin($pins->[$gpio_pin], HIGH);
-            }
-            else {
-                write_pin($pins->[$gpio_pin], LOW);
-            }
-        }
-
-        $step_counter += $self->_phases;
-
-        if ($step_counter >= STEP_COUNT){
-            $step_counter = 0;
-        }
-
-        $self->_wait;
-    }
-
-    for (@$pins){
-        write_pin($_, LOW);
-        pin_mode($_, INPUT);
-    }
+    $self->_engage_motor($degrees, 'cw');
 }
 sub ccw {
     my ($self, $degrees) = @_;
-
-    my $step_counter = 0;
-    my $pins = $self->_pins;
-
-    for (1..$self->_turns($degrees)){
-        for my $gpio_pin (NUM_PINS){
-            if (STEPPER_SEQUENCE->[$step_counter][$gpio_pin]){
-                write_pin($pins->[$gpio_pin], HIGH);
-            }
-            else {
-                write_pin($pins->[$gpio_pin], LOW);
-            }
-        }
-
-        $step_counter += $self->_phases * -1;
-
-        if ($step_counter < 0){
-            $step_counter = STEP_COUNT + $self->_phases * -1;
-        }
-
-        $self->_wait;
-    }
-
-    for (@$pins){
-        write_pin($_, LOW);
-        pin_mode($_, INPUT);
-    }
+    $self->_engage_motor($degrees, 'ccw');
+}
+sub delay {
+    my ($self, $delay) = @_;
+    $self->{delay} = $delay if defined $delay;
+    return $self->{delay};
 }
 sub speed {
     my ($self, $speed) = @_;
@@ -119,14 +71,54 @@ sub speed {
     }
     return $self->{speed};
 }
-sub delay {
-    my ($self, $delay) = @_;
-    $self->{delay} = $delay if defined $delay;
-    return $self->{delay};
+sub _engage_motor {
+    my ($self, $degrees, $direction) = @_;
+
+    if (! defined $degrees){
+        croak "a direction in integer degrees must be specified\n";
+    }
+    if (! defined $direction || $direction !~ /cw/){
+        croak "_engage_motor() requires either 'cw' or 'ccw' direction sent in";
+    }
+
+    my $step_counter = 0;
+    my $pins = $self->_pins;
+
+    for (1..$self->_turns($degrees)) {
+        for my $gpio_pin (NUM_PINS) {
+            if (STEPPER_SEQUENCE->[$step_counter][$gpio_pin]) {
+                write_pin($pins->[$gpio_pin], HIGH);
+            }
+            else {
+                write_pin($pins->[$gpio_pin], LOW);
+            }
+        }
+
+        if ($direction eq 'cw'){ # clockwise direction
+            $step_counter += $self->_phases;
+
+            if ($step_counter >= STEP_COUNT){
+                $step_counter = 0;
+            }
+        }
+        else {
+            $step_counter += $self->_phases * - 1;
+
+            if ($step_counter < 0) {
+                $step_counter = STEP_COUNT + $self->_phases * - 1;
+            }
+        }
+
+        $self->_wait;
+    }
+
+    for (@$pins){
+        write_pin($_, LOW);
+        pin_mode($_, INPUT);
+    }
 }
-sub _wait {
-    my ($self) = @_;
-    select(undef, undef, undef, $self->delay);
+sub _phases {
+    return $_[0]->speed eq 'full' ? FULL : HALF;
 }
 sub _pins {
     my ($self, $pins) = @_;
@@ -146,9 +138,6 @@ sub _pins {
 
     return $self->{pins};
 }
-sub _phases {
-    return $_[0]->speed eq 'full' ? FULL : HALF;
-}
 sub _turns {
     # returns the number of "turns" to get to the degrees we want.
     # 64 gear ratio * (degrees / turns for each phase)
@@ -158,6 +147,10 @@ sub _turns {
     return $self->_phases == 1
         ? int($degrees / 5.625 + 0.5) * 64
         : int($degrees / 11.25 + 0.5) * 64;
+}
+sub _wait {
+    my ($self) = @_;
+    select(undef, undef, undef, $self->delay);
 }
 
 1;
@@ -169,16 +162,104 @@ RPi::StepperMotor - Control a typical stepper motor with the Raspberry Pi
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+use warnings;
+use strict;
 
-Perhaps a little code snippet.
+use RPi::StepperMotor;
 
-    use RPi::StepperMotor;
+my $sm = RPi::StepperMotor->new(
+    pins => [12, 16, 20, 21],
+    speed => 'half',            # optional, default
+    delay => 0.01               # optional, default
+);
 
-    my $foo = RPi::StepperMotor->new();
-    ...
+$sm->cw(180);  # turn motor 180 degrees clockwise
+$sm->ccw(240); # 240 degrees the other way
+
+$sm->speed('full'); # skip every second step, turning the motor twice as fast
+$sm->delay(0.5);    # set the delay to a half-second in between steps
 
 =head1 METHODS
+
+=head2 new
+
+Instantiates and returns a new L<RPi::StepperMotor> object.
+
+Parameters:
+
+    pins => $aref
+
+Mandatory, Array Reference: The ULN2003 has four data pins, IN1, IN2, IN3 and
+IN4. Send in the GPIO pin numbers in the array reference which correlate to the
+driver pins in the listed order.
+
+    speed => 'half'|'full'
+
+Optional, String: By default we run in "half speed" mode. Essentially, in this
+mode we run through all eight steps. Send in 'full' to double the speed of the
+motor. We do this by skipping every other step.
+
+    delay => Float|Int
+
+Optional, Float or Int: By default, between each step, we delay by C<0.01>
+seconds. Send in a float or integer for the number of seconds to delay each step
+by. The smaller this number, the faster the motor will turn.
+
+=head2 cw($degrees)
+
+Turns the motor in a clockwise direction by a specified number of degrees.
+
+Parameters:
+
+    $degrees
+
+Mandatory, Integer: The number of degrees to turn the motor in a clockwise
+direction.
+
+ =head2 ccw($degrees)
+
+Turns the motor in a counter-clockwise direction by a specified number of
+degrees.
+
+Parameters:
+
+    $degrees
+
+Mandatory, Integer: The number of degrees to turn the motor in a
+counter-clockwise direction.
+
+=head2 delay($seconds)
+
+This is the amount of time to delay between each step of the motor. It defaults
+to C<0.01> seconds.
+
+Parameters:
+
+    $seconds
+
+Optional, Float|Int: The number of seconds (or fraction of seconds) to delay
+between each step of the motor.
+
+Returns:
+
+The currently set delay time.
+
+=head2 speed($speed)
+
+The motor can operate in 'half' speed mode (where all eight steps are used) or
+'full' speed mode, where every second step is skipped. 'half' speed mode is more
+accurate, but 'full' speed mode is faster.
+
+Parameters:
+
+    $speed
+
+Optional, String: Send in 'full' to skip every second step rendering the motor
+twice as fast. The other option is 'half', which is the default setting.
+
+Returns:
+
+The currently set speed.
 
 =head1 AUTHOR
 
@@ -193,38 +274,3 @@ under the terms of the the Artistic License (2.0). You may obtain a
 copy of the full license at:
 
 L<http://www.perlfoundation.org/artistic_license_2_0>
-
-Any use, modification, and distribution of the Standard or Modified
-Versions is governed by this Artistic License. By using, modifying or
-distributing the Package, you accept this license. Do not use, modify,
-or distribute the Package, if you do not accept this license.
-
-If your Modified Version has been derived from a Modified Version made
-by someone other than you, you are nevertheless required to ensure that
-your Modified Version complies with the requirements of this license.
-
-This license does not grant you the right to use any trademark, service
-mark, tradename, or logo of the Copyright Holder.
-
-This license includes the non-exclusive, worldwide, free-of-charge
-patent license to make, have made, use, offer to sell, sell, import and
-otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
-
-Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
-AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
-YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
-CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-=cut
-
-1; # End of RPi::StepperMotor
