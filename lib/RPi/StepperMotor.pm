@@ -265,6 +265,25 @@ Returns:
 
 The currently set speed.
 
+=head1 STEPPER BINARY CLI TOOL
+
+I've included a very simple binary that is installed with this distribution
+that performs all of the functions in the module easily from the command line.
+
+=head2 Usage
+
+    stepper <direction> <degrees> [speed]
+
+=head2 Example
+
+    # turn clockwise 180 degrees at normal (half) speed
+
+    stepper cw 180
+   
+    # turn counter-clockwise 240 degrees at full speed
+
+    stepper ccw 240 full
+
 =head1 AUTHOR
 
 Steve Bertrand, C<< <steveb at cpan.org> >>

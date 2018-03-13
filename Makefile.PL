@@ -10,6 +10,7 @@ WriteMakefile(
     ABSTRACT_FROM    => 'lib/RPi/StepperMotor.pm',
     LICENSE          => 'artistic_2',
     PL_FILES         => {},
+    EXE_FILES        => [qw(bin/stepper)],
     MIN_PERL_VERSION => '5.006',
     MIN_PERL_VERSION => 5.010,
     META_MERGE => {
