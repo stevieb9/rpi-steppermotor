@@ -1,8 +1,11 @@
 Revision history for RPi-StepperMotor
 
-0.02 UNREL
+2.3603 UNREL
         -
 
-0.01    2018-03-13
+2.3602  2018-03-13
+        - fix unformatted SYNOPSIS
+
+2.3601  2018-03-13
         First version, released on an unsuspecting world.
 

@@ -8,7 +8,7 @@ use Carp qw(croak);
 use RPi::Const qw(:all);
 use WiringPi::API qw(:perl);
 
-our $VERSION = '2.3602';
+our $VERSION = '2.3603';
 
 use constant FULL => 2;
 use constant HALF => 1;
@@ -163,22 +163,22 @@ RPi::StepperMotor - Control a typical stepper motor with the Raspberry Pi
 
 =head1 SYNOPSIS
 
-use warnings;
-use strict;
+    use warnings;
+    use strict;
 
-use RPi::StepperMotor;
+    use RPi::StepperMotor;
 
-my $sm = RPi::StepperMotor->new(
-    pins => [12, 16, 20, 21],
-    speed => 'half',            # optional, default
-    delay => 0.01               # optional, default
-);
+    my $sm = RPi::StepperMotor->new(
+        pins => [12, 16, 20, 21],
+        speed => 'half',            # optional, default
+        delay => 0.01               # optional, default
+    );
 
-$sm->cw(180);  # turn motor 180 degrees clockwise
-$sm->ccw(240); # 240 degrees the other way
+    $sm->cw(180);  # turn motor 180 degrees clockwise
+    $sm->ccw(240); # 240 degrees the other way
 
-$sm->speed('full'); # skip every second step, turning the motor twice as fast
-$sm->delay(0.5);    # set the delay to a half-second in between steps
+    $sm->speed('full'); # skip every second step, turning the motor twice as fast
+    $sm->delay(0.5);    # set the delay to a half-second in between steps
 
 =head1 DESCRIPTION
 
