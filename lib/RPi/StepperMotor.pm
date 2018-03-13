@@ -111,11 +111,6 @@ sub _engage_motor {
 
         $self->_wait;
     }
-
-    for (@$pins){
-        write_pin($_, LOW);
-        pin_mode($_, INPUT);
-    }
 }
 sub _phases {
     return $_[0]->speed eq 'full' ? FULL : HALF;
