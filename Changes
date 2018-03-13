@@ -1,5 +1,8 @@
 Revision history for RPi-StepperMotor
 
+2.3604 UNREL
+        -
+
 2.3603  2018-03-13
         - remove code that unsets the pins. This is the user's or
           RPi::WiringPi's responsibility

@@ -8,7 +8,7 @@ use Carp qw(croak);
 use RPi::Const qw(:all);
 use WiringPi::API qw(:perl);
 
-our $VERSION = '2.3603';
+our $VERSION = '2.3604';
 
 use constant FULL => 2;
 use constant HALF => 1;
