@@ -28,3 +28,5 @@ if ($dir eq 'cw'){
 else {
     $s->ccw($deg);
 }
+
+$s->cleanup;
