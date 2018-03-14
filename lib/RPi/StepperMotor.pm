@@ -60,8 +60,8 @@ sub cleanup {
     my ($self) = @_;
 
     for (@{ $self->_pins }){
-        write_pin(LOW);
-        pin_mode(INPUT);
+        write_pin($_, LOW);
+        pin_mode($_, INPUT);
     }
 }
 sub delay {

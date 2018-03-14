@@ -20,3 +20,5 @@ if ($ARGV[1] eq 'cw'){
 else {
     $s->ccw($ARGV[0]);
 }
+
+$s->cleanup;
