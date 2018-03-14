@@ -56,6 +56,14 @@ sub ccw {
     my ($self, $degrees) = @_;
     $self->_engage_motor($degrees, 'ccw');
 }
+sub cleanup {
+    my ($self) = @_;
+
+    for (@{ $self->_pins }){
+        write_pin(LOW);
+        pin_mode(INPUT);
+    }
+}
 sub delay {
     my ($self, $delay) = @_;
     $self->{delay} = $delay if defined $delay;
@@ -175,6 +183,8 @@ RPi::StepperMotor - Control a typical stepper motor with the Raspberry Pi
     $sm->speed('full'); # skip every second step, turning the motor twice as fast
     $sm->delay(0.5);    # set the delay to a half-second in between steps
 
+    $sm->cleanup; # reset pins back to INPUT
+
 =head1 DESCRIPTION
 
 Control a 28BYJ-48 stepper motor through a ULN2003 driver chip.
@@ -231,6 +241,13 @@ Parameters:
 
 Mandatory, Integer: The number of degrees to turn the motor in a
 counter-clockwise direction.
+
+=head2 cleanup
+
+Sets all pins back to INPUT mode. This should be called near the end of your
+script.
+
+Takes no parameters, has no return.
 
 =head2 delay($seconds)
 

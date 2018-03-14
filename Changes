@@ -2,6 +2,7 @@ Revision history for RPi-StepperMotor
 
 2.3604 UNREL
         - added Fritzing breadboard layout/docs directory
+        - added cleanup() to clean up pins after use
 
 2.3603  2018-03-13
         - remove code that unsets the pins. This is the user's or
