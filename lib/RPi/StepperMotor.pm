@@ -46,6 +46,8 @@ sub new {
     my $speed = $args{speed} // 'half';
     $self->speed($speed);
 
+    $self->name($args{name});
+
     return $self;
 }
 sub cw {
@@ -68,6 +70,11 @@ sub delay {
     my ($self, $delay) = @_;
     $self->{delay} = $delay if defined $delay;
     return $self->{delay};
+}
+sub name {
+    my ($self, $name) = @_;
+    $self->{name} = $name if defined $name;
+    return $self->{name};
 }
 sub speed {
     my ($self, $speed) = @_;
@@ -172,9 +179,10 @@ RPi::StepperMotor - Control a typical stepper motor with the Raspberry Pi
     use RPi::StepperMotor;
 
     my $sm = RPi::StepperMotor->new(
-        pins => [12, 16, 20, 21],
+        pins  => [12, 16, 20, 21],
         speed => 'half',            # optional, default
         delay => 0.01               # optional, default
+        name  => 'tilt'             # optional, default undef
     );
 
     $sm->cw(180);  # turn motor 180 degrees clockwise
@@ -182,6 +190,8 @@ RPi::StepperMotor - Control a typical stepper motor with the Raspberry Pi
 
     $sm->speed('full'); # skip every second step, turning the motor twice as fast
     $sm->delay(0.5);    # set the delay to a half-second in between steps
+
+    $sm->name('new name');
 
     $sm->cleanup; # reset pins back to INPUT
 
@@ -264,6 +274,19 @@ between each step of the motor.
 Returns:
 
 The currently set delay time.
+
+=head2 name($name)
+
+When you have more than one servo in an application, it may be useful to give
+each motor its own name for printing purposes.
+
+Parameters:
+
+    $name
+
+Optional, String. The name you want to give the servo.
+
+Return: The name if one has been set, otherwise C<undef>.
 
 =head2 speed($speed)
 

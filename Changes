@@ -1,7 +1,9 @@
 Revision history for RPi-StepperMotor
 
 2.3605 UNREL
-        -
+        - added new examples (multi-motor and fork)
+        - added new name() feature so each motor object can have its own name
+          (closes #1)
 
 2.3604  2018-03-14
         - Pi day!
