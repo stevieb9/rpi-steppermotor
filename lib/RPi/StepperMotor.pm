@@ -106,13 +106,9 @@ sub _engage_motor {
     for (1..$self->_turns($degrees)) {
         for my $gpio_pin (NUM_PINS) {
             if (STEPPER_SEQUENCE->[$step_counter][$gpio_pin]) {
-                if ($self->_expander){
-                    $self->_expander()->write($pins->[$gpio_pin], HIGH);
-                    print "$pins->[$gpio_pin]: " . $self->_expander()->read($pins->[$gpio_pin]) . "\n";
-                }
-                else {
-                    write_pin($pins->[$gpio_pin], HIGH);
-                }
+                $self->_expander
+                    ? $self->_expander()->write($pins->[$gpio_pin], HIGH)
+                    : write_pin($pins->[$gpio_pin], HIGH);
             }
             else {
                 $self->_expander
