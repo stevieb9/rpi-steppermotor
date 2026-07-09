@@ -1,7 +1,12 @@
 Revision history for RPi-StepperMotor
 
 3.1802 UNREL
-    -
+    - Fixed speed(): its validation used an inverted grep (`$speed ne $_`) that
+      could never be false, so the croak was dead code and any value was
+      accepted; it now croaks on anything other than 'full' or 'half'
+    - Added t/05-unit.t: HW-free coverage of the step patterns and counter wrap
+      (cw/ccw, full/half) via an injected mock expander, the _turns() gearing
+      math, and the new()/pins/speed/direction validation croaks
 
 3.1801    2026-06-12
         - Bump prereq of WiringPi::API to 3.1803

@@ -83,7 +83,7 @@ sub name {
 sub speed {
     my ($self, $speed) = @_;
     if (defined $speed){
-        if (! grep {$speed ne $_} qw(full half)){
+        if (! grep {$speed eq $_} qw(full half)){
             croak "'speed' parameter must be either 'full' or 'half'\n";
         }
         $self->{speed} = $speed;
