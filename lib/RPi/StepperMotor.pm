@@ -227,6 +227,13 @@ RPi::StepperMotor - Control a typical stepper motor with the Raspberry Pi
 Control a 28BYJ-48 stepper motor through a ULN2003 driver chip, with the option
 to run it from an MCP23017 GPIO Expander.
 
+=head1 3D-PRINTABLE MOUNTING PLATFORM
+
+3D-printable STL models for a mounting platform for this motor
+(C<baseplate_left>, C<baseplate_right> and C<dowel_pins>) are kept alongside the
+rest of the RPi::WiringPi test-platform structure, in the C<rpi-wiringpi>
+repository under F<docs/structure/steppermotor_platform_v1/>.
+
 =head1 METHODS
 
 =head2 new

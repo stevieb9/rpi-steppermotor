@@ -7,6 +7,9 @@ Revision history for RPi-StepperMotor
     - Added t/05-unit.t: HW-free coverage of the step patterns and counter wrap
       (cw/ccw, full/half) via an injected mock expander, the _turns() gearing
       math, and the new()/pins/speed/direction validation croaks
+    - Removed the duplicate 3D-printing STLs from docs/steppermotor_framework/;
+      they are kept once, with the RPi::WiringPi test-platform structure in the
+      rpi-wiringpi repo, and the POD now points there
 
 3.1801    2026-06-12
         - Bump prereq of WiringPi::API to 3.1803
