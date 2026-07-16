@@ -10,6 +10,10 @@ Revision history for RPi-StepperMotor
     - Removed the duplicate 3D-printing STLs from docs/steppermotor_framework/;
       they are kept once, with the RPi::WiringPi test-platform structure in the
       rpi-wiringpi repo, and the POD now points there
+    - Added off(), which de-energizes the motor (drives all coil pins LOW) while
+      leaving them as OUTPUT so the motor stays usable; cleanup() now calls it,
+      so it also de-energizes expander-driven motors, which it previously left
+      energized
 
 3.1801    2026-06-12
         - Bump prereq of WiringPi::API to 3.1803

@@ -63,9 +63,14 @@ sub ccw {
 sub cleanup {
     my ($self) = @_;
 
+    # De-energize the coils first - off() covers the expander path too, which
+    # the INPUT loop below never touched - then release the direct-GPIO pins
+    # back to INPUT as an end-of-script teardown
+
+    $self->off;
+
     if (! $self->_expander) {
-        for (@{$self->_pins}) {
-            write_pin($_, LOW);
+        for (@{ $self->_pins }) {
             pin_mode($_, INPUT);
         }
     }
@@ -79,6 +84,22 @@ sub name {
     my ($self, $name) = @_;
     $self->{name} = $name if defined $name;
     return $self->{name};
+}
+sub off {
+    my ($self) = @_;
+
+    # Drive every coil pin LOW to de-energize the motor - stops the holding
+    # torque and the idle current (and heat) the coils draw. Unlike cleanup(),
+    # the pins are left as OUTPUT, so the motor stays usable and a later
+    # cw()/ccw() just resumes. Covers both the direct-GPIO and expander paths
+
+    for my $pin (@{ $self->_pins }) {
+        $self->_expander
+            ? $self->_expander()->write($pin, LOW)
+            : write_pin($pin, LOW);
+    }
+
+    return 0;
 }
 sub speed {
     my ($self, $speed) = @_;
@@ -220,7 +241,11 @@ RPi::StepperMotor - Control a typical stepper motor with the Raspberry Pi
 
     $sm->name('new name');
 
-    $sm->cleanup; # reset pins back to INPUT
+    # Powering off
+
+    $sm->off;     # de-energize the coils; motor stays usable, no holding torque
+
+    $sm->cleanup; # de-energize and release the pins back to INPUT
 
 =head1 DESCRIPTION
 
@@ -295,8 +320,9 @@ counter-clockwise direction.
 
 =head2 cleanup
 
-Sets all pins back to INPUT mode. This should be called near the end of your
-script.
+De-energizes the motor (as L</off> does, on both the direct-GPIO and expander
+paths) and then, for a directly-driven motor, sets its pins back to INPUT mode.
+This should be called near the end of your script.
 
 Takes no parameters, has no return.
 
@@ -328,6 +354,16 @@ Parameters:
 Optional, String. The name you want to give the servo.
 
 Return: The name if one has been set, otherwise C<undef>.
+
+=head2 off
+
+De-energizes the motor by driving all four coil pins LOW, stopping the holding
+torque and the idle current (and heat) the coils would otherwise draw. Unlike
+L</cleanup>, the pins are left in OUTPUT mode, so the motor stays ready - a
+later L</cw> or L</ccw> simply resumes. Works whether the motor is driven
+directly from the Pi's GPIO or through an MCP23017 expander.
+
+Takes no parameters. Returns C<0>.
 
 =head2 speed($speed)
 
