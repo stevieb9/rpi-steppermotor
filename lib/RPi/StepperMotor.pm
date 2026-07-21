@@ -270,8 +270,9 @@ C<IN4>.
 
 =head2 cw($degrees)
 
-Turns the motor in a clockwise direction by a specified number of degrees.
-Clockwise is defined when the shaft of the motor is facing you/upwards.
+Turns the motor clockwise by a specified number of degrees. Direction is
+defined as viewed when looking directly at the end of the output shaft (i.e.
+the shaft pointing toward you).
 
 Parameters:
 
@@ -282,9 +283,9 @@ direction.
 
 =head2 ccw($degrees)
 
-Turns the motor in a counter-clockwise direction by a specified number of
-degrees. Counter-clockwise is defined when the shaft of the motor is facing
-you/upwards.
+Turns the motor counter-clockwise by a specified number of degrees. This is
+the reverse of L</cw($degrees)>, using the same viewpoint: looking directly
+at the end of the output shaft.
 
 Parameters:
 
