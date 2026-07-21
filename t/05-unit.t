@@ -98,6 +98,42 @@ like $@, qr/four elements/, 'new(): pins aref must have exactly four elements';
     like $@, qr/degrees must be specified/, 'cw(): missing degrees croaks';
 }
 
+# --- off(): de-energizes all four coil pins, pins stay OUTPUT ---
+{
+    my $sm = motor;
+
+    $sm->cw(6);                            # Energize the coils through a move
+
+    @{ $sm->_expander->{writes} } = ();    # Isolate just off()'s writes/modes
+    @{ $sm->_expander->{modes} }  = ();
+
+    is $sm->off, 0, 'off(): returns 0';
+
+    is_deeply
+        [sort { $a->[0] <=> $b->[0] } @{ $sm->_expander->{writes} }],
+        [[0, LOW], [1, LOW], [2, LOW], [3, LOW]],
+        'off(): drives all four coil pins LOW';
+
+    is_deeply $sm->_expander->{modes}, [],
+        'off(): makes no mode() changes, so the pins stay OUTPUT';
+}
+
+# --- cleanup() de-energizes the expander path too (it used to do nothing) ---
+{
+    my $sm = motor;
+
+    $sm->cw(6);
+
+    @{ $sm->_expander->{writes} } = ();
+
+    $sm->cleanup;
+
+    is_deeply
+        [sort { $a->[0] <=> $b->[0] } @{ $sm->_expander->{writes} }],
+        [[0, LOW], [1, LOW], [2, LOW], [3, LOW]],
+        'cleanup(): de-energizes an expander-driven motor via off()';
+}
+
 done_testing();
 
 # Run one move and return the raw [pin, value] writes it emitted.
